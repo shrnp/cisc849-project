@@ -3,15 +3,15 @@ from itertools import combinations
 from functools import reduce
 import random
 
-NUM_AGENTS = 10
-MAX_TIMESTEPS = 50
+NUM_AGENTS     = 10
+MAX_TIMESTEPS  = 50
 
-MIN_SOC = 0.8
-MAX_SOC = 1
-MIN_EX = 0.0001
-MAX_EX = 0.0009
-MIN_RISK = 0.0001
-MAX_RISK = 0.0009
+MIN_SOC        = 0.80
+MAX_SOC        = 0.95
+MIN_EX         = 0.0001
+MAX_EX         = 0.0009
+MIN_RISK       = 0.0001
+MAX_RISK       = 0.0009
 
 def overall_exposure(p_values):
     p_values = list(map(float, p_values))
