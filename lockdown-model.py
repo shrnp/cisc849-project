@@ -3,6 +3,16 @@ from itertools import combinations
 from functools import reduce
 import random
 
+NUM_AGENTS = 10
+MAX_TIMESTEPS = 50
+
+MIN_SOC = 0.8
+MAX_SOC = 1
+MIN_EX = 0.0001
+MAX_EX = 0.0009
+MIN_RISK = 0.0001
+MAX_RISK = 0.0009
+
 def overall_exposure(p_values):
     p_values = list(map(float, p_values))
     if len(p_values) == 1:
@@ -25,7 +35,7 @@ class Household:
         self.risk_factor = r
 
     def value(self):
-        return self.risk_factor/(self.social_eagerness * self.exposure)
+        return self.risk_factor/(self.exposure_chance*self.social_eagerness)
 
     def coalition_payoff(self, coalition):
         members = coalition.members
@@ -34,7 +44,12 @@ class Household:
         else:
             exposures_list = [o.exposure_chance for o in list(set().union(members, [self]))]
             coalition_exposure = overall_exposure(exposures_list)
-            return pow(self.social_eagerness, 1 - risk_factor) / pow(coalition_exposure, risk_factor)
+            return pow(self.social_eagerness,
+                       self.risk_factor) / pow(coalition_exposure,
+                                               1 - self.risk_factor)
+
+    #def __str__(self):
+    #    return str(round(self.social_eagerness, 3))
 
 class Coalition:
     members = []
@@ -43,6 +58,9 @@ class Coalition:
     def __init__(self, m, i):
         self.members = m
         self.idnum = i
+
+    def __str__(self):
+        return str(list(map(str, self.members)))
     
 class World:
     agent_set = []
@@ -55,8 +73,8 @@ class World:
                                             random.uniform(MIN_EX,   MAX_EX),
                                             random.uniform(MIN_RISK, MAX_RISK)))
         self.coalition_set = []
-        for a in self.agent_set:
-            self.coalition_set.append(Coalition([a], i))
+        for i in range(0, len(self.agent_set)):
+            self.coalition_set.append(Coalition([self.agent_set[i]], i))
 
     def move_to(self, agent, coalition_id):
         for c in self.coalition_set:
@@ -68,7 +86,7 @@ class World:
         return None
 
     def current_coalition(self, agent):
-        for c in coalition_set:
+        for c in self.coalition_set:
             if agent in c.members:
                 return c
         return None
@@ -78,44 +96,41 @@ class World:
         for c in self.coalition_set:
             if c.members:
                 active_coalitions.append(c)
-        best_coalition_id = -1
+        best_c = -1
         max_payoff = -1
         for c in active_coalitions:
             cur_payoff = agent.coalition_payoff(c)
+            print(cur_payoff)
             if cur_payoff > max_payoff:
-                best_coalition_id = c.idnum
+                best_c = c
                 max_payoff = cur_payoff
-        return best_coalition_id
-                
+        print('--------------------')
+        return best_c
+
+    def __str__(self):
+        return str(list(map(str, self.coalition_set)))
+    
     def simulate(self):
+        move_count = 0
         for i in range(0, MAX_TIMESTEPS):
             # simulation main loop
             random.shuffle(self.agent_set)
             for a in self.agent_set:
-                best = self.best_coalition(a)
-                cur = self.current_coalition(a)
+                best = self.best_coalition(a).idnum
+                cur = self.current_coalition(a).idnum
                 if best != cur:
                     self.move_to(a, best)
+                    print("agent moved")
+                    move_count += 1
                 # determine coalition with the highest value
                 # compare highest value to self.
                 # if self is best, leave coalition/stay alone
                 # if a coalition is best, join it/stay if already there
-            if i % 15 == 0:
-                print(self.coalition_set)
-        
-NUM_AGENTS = 20
-MAX_TIMESTEPS = 500
-
-MIN_SOC = 0
-MAX_SOC = 1
-MIN_EX = 0.01
-MAX_EX = 0.10
-MIN_RISK = 0
-MAX_RISK = 1    
-    
+        print(move_count)
+            
 assert overall_exposure([0.5, 0.2]) == 0.6
 assert overall_exposure([0.5, 0.2, 0.3]) == 0.72
 
 world_1 = World()
 world_1.simulate()
-
+print(world_1)
