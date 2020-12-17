@@ -3,15 +3,15 @@ from itertools import combinations
 from functools import reduce
 import random
 
-NUM_AGENTS     = 10
-MAX_TIMESTEPS  = 50
+NUM_AGENTS     = 20
+MAX_TIMESTEPS  = 40
 
-MIN_SOC        = 0.80
-MAX_SOC        = 0.95
-MIN_EX         = 0.0001
-MAX_EX         = 0.0009
-MIN_RISK       = 0.0001
-MAX_RISK       = 0.0009
+MIN_SOC        = 0
+MAX_SOC        = 1
+MIN_EX         = 0
+MAX_EX         = 1
+MIN_RISK       = 0
+MAX_RISK       = 1
 
 def overall_exposure(p_values):
     p_values = list(map(float, p_values))
@@ -35,7 +35,8 @@ class Household:
         self.risk_factor = r
 
     def value(self):
-        return self.risk_factor/(self.exposure_chance*self.social_eagerness)
+        #return self.risk_factor/(self.exposure_chance*self.social_eagerness)
+        return 0
 
     def coalition_payoff(self, coalition):
         members = coalition.members
@@ -44,9 +45,10 @@ class Household:
         else:
             exposures_list = [o.exposure_chance for o in list(set().union(members, [self]))]
             coalition_exposure = overall_exposure(exposures_list)
-            return pow(self.social_eagerness,
-                       self.risk_factor) / pow(coalition_exposure,
-                                               1 - self.risk_factor)
+            #return pow(self.social_eagerness,
+            #           self.risk_factor) / pow(coalition_exposure,
+            #                                   1 - self.risk_factor)
+            return self.social_eagerness - coalition_exposure*self.risk_factor
 
     #def __str__(self):
     #    return str(round(self.social_eagerness, 3))
@@ -100,11 +102,11 @@ class World:
         max_payoff = -1
         for c in active_coalitions:
             cur_payoff = agent.coalition_payoff(c)
-            print(cur_payoff)
+            #print(cur_payoff)
             if cur_payoff > max_payoff:
                 best_c = c
                 max_payoff = cur_payoff
-        print('--------------------')
+        #print('--------------------')
         return best_c
 
     def __str__(self):
@@ -126,6 +128,7 @@ class World:
                 # compare highest value to self.
                 # if self is best, leave coalition/stay alone
                 # if a coalition is best, join it/stay if already there
+            print('-------------------------------')
         print(move_count)
             
 assert overall_exposure([0.5, 0.2]) == 0.6
