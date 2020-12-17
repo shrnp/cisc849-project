@@ -130,6 +130,7 @@ class World:
                 # if a coalition is best, join it/stay if already there
             print('-------------------------------')
         print(move_count)
+        return None
             
 assert overall_exposure([0.5, 0.2]) == 0.6
 assert overall_exposure([0.5, 0.2, 0.3]) == 0.72
